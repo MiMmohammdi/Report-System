@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - sales-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - sales-network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Mailhog (Local Email Testing)
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - sales-network
+
+  # Invoice Service
+  invoice-service:
+    build: 
+      context: ./invoice-service
+      dockerfile: Dockerfile
+    container_name: invoice-service
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/invoicedb
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - sales-network
+    volumes:
+      - ./invoice-service:/app
+      - /app/node_modules
+
+  # Email Service
+  email-service:
+    build: 
+      context: ./email-service
+      dockerfile: Dockerfile
+    container_name: email-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MAIL_FROM=sales@company.com
+      - MAIL_TO=manager@company.com
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - sales-network
+    volumes:
+      - ./email-service:/app
+      - /app/node_modules
+
+volumes:
+  mongo-data:
+  rabbitmq-data:
+
+networks:
+  sales-network:
+    driver: bridge
