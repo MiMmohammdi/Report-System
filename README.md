@@ -22,14 +22,14 @@ A robust microservices-based application for invoice management and automated da
 ## 🛠 System Architecture
 
 ```
-+----------------+ 			+----------------+ 		+----------------+
-| Invoice Service|	---->	| RabbitMQ Queue |----> | Email Service  | 
-+----------------+ 			+----------------+ 		+----------------+
-	|														|
-	v 														v
-+----------------+ 									+-------------------+
-	| MongoDB | 									| Daily Sales Report|
-+----------------+ 									+-------------------+
++----------------+ 		+----------------+ 		+----------------+
+| Invoice Service|	---->	| RabbitMQ Queue |     ---->    | Email Service  | 
++----------------+ 		+----------------+ 		+----------------+
+	|								 |
+	v 								 v
++----------------+ 						+-------------------+
+   | MongoDB | 							| Daily Sales Report|
++----------------+ 						+-------------------+
 
   ```
 
