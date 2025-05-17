@@ -84,7 +84,7 @@ A robust microservices-based application for invoice management and automated da
 
 	RABBITMQ_URL=amqp://rabbitmq
 
-	`email-service/.env`:
+	email-service/.env:
 
 	PORT=3001
 
