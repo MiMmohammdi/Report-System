@@ -1,0 +1,27 @@
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db 
+    networks:
+      - invoice-service-network
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"   
+    networks:
+      - invoice-service-network
+
+volumes:
+  mongo-data:
+
+networks:
+  invoice-service-network:
+    driver: bridge
